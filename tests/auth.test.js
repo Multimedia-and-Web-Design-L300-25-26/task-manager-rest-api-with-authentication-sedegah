@@ -1,7 +1,22 @@
 import request from "supertest";
+import mongoose from "mongoose";
 import app from "../src/app.js";
+import User from "../src/models/User.js";
 
 describe("Auth Routes", () => {
+
+  beforeAll(async () => {
+    // Ensure we are connected to the test database
+    if (mongoose.connection.readyState === 0) {
+      await mongoose.connect(process.env.MONGO_URI);
+    }
+    // Clean up users before tests
+    await User.deleteMany({ email: "test@example.com" });
+  });
+
+  afterAll(async () => {
+    await mongoose.connection.close();
+  });
 
   let token;
 

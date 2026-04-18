@@ -1,10 +1,22 @@
 import request from "supertest";
+import mongoose from "mongoose";
 import app from "../src/app.js";
+import User from "../src/models/User.js";
+import Task from "../src/models/Task.js";
 
 let token;
 let taskId;
 
 beforeAll(async () => {
+  // Ensure we are connected to the test database
+  if (mongoose.connection.readyState === 0) {
+    await mongoose.connect(process.env.MONGO_URI);
+  }
+
+  // Clean up
+  await User.deleteMany({ email: "task@example.com" });
+  await Task.deleteMany({});
+
   // Register
   await request(app)
     .post("/api/auth/register")
@@ -56,6 +68,10 @@ describe("Task Routes", () => {
 
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
+  });
+
+  afterAll(async () => {
+    await mongoose.connection.close();
   });
 
 });
